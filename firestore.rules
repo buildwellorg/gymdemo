@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Deploy with: firebase deploy --only firestore:rules
+//
+// Note: all admin writes in this app go through Next.js API routes using the
+// Firebase Admin SDK, which is a privileged context that bypasses these rules
+// entirely — the real write-access check happens in src/lib/require-admin.ts
+// on each API route. These rules are defense-in-depth for the (currently
+// unused) case where a client ever reads/writes Firestore directly.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /pricing/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /offers/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /equipment/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /trainers/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /testimonials/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /siteConfig/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /contactSubmissions/{docId} {
+      // Written only by the server (Admin SDK) via /api/contact.
+      allow read, write: if false;
+    }
+  }
+}
