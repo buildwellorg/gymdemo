@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const sections = [
+  { name: "Subscriptions", description: "Members, expiry dates & renewals", href: "/admin/subscriptions" },
   { name: "Pricing", description: "Membership tiers & pricing", href: "/admin/pricing" },
   { name: "Offers", description: "Promotions & discounts", href: "/admin/offers" },
   {

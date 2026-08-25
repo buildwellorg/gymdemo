@@ -12,7 +12,17 @@ function formatINR(amount: number) {
   }).format(amount);
 }
 
-export default function MembershipClient({ plans }: { plans: MembershipPlan[] }) {
+function discountedPrice(price: number, discountPercent: number) {
+  return Math.round(price * (1 - discountPercent / 100));
+}
+
+export default function MembershipClient({
+  plans,
+  discountPercent,
+}: {
+  plans: MembershipPlan[];
+  discountPercent: number;
+}) {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null);
 
@@ -58,8 +68,9 @@ export default function MembershipClient({ plans }: { plans: MembershipPlan[] })
 
         <div className="mt-14 grid gap-8 md:grid-cols-3">
           {plans.map((plan) => {
-            const price =
+            const originalPrice =
               billingCycle === "monthly" ? plan.priceMonthly : plan.priceAnnual;
+            const price = discountedPrice(originalPrice, discountPercent);
 
             return (
               <div
@@ -87,6 +98,11 @@ export default function MembershipClient({ plans }: { plans: MembershipPlan[] })
                     /{billingCycle === "monthly" ? "month" : "year"}
                   </span>
                 </div>
+                {discountPercent > 0 && (
+                  <p className="mt-1 text-sm text-neutral-500 line-through">
+                    {formatINR(originalPrice)}
+                  </p>
+                )}
 
                 <ul className="mt-8 flex-1 space-y-3">
                   {plan.features.map((feature) => (
@@ -96,7 +112,7 @@ export default function MembershipClient({ plans }: { plans: MembershipPlan[] })
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-500"
+                        className="mt-0.5 h-5 w-5 shrink-0 text-orange-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -133,11 +149,15 @@ export default function MembershipClient({ plans }: { plans: MembershipPlan[] })
       {selectedPlan && (
         <UpiPaymentModal
           onClose={() => setSelectedPlan(null)}
+          planId={selectedPlan.id}
           planName={selectedPlan.name}
           amount={
-            billingCycle === "monthly"
-              ? selectedPlan.priceMonthly
-              : selectedPlan.priceAnnual
+            discountedPrice(
+              billingCycle === "monthly"
+                ? selectedPlan.priceMonthly
+                : selectedPlan.priceAnnual,
+              discountPercent,
+            )
           }
           billingCycle={billingCycle}
         />

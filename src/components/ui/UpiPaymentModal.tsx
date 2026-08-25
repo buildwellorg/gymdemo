@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 interface UpiPaymentModalProps {
   onClose: () => void;
+  planId: string;
   planName: string;
   amount: number;
   billingCycle: "monthly" | "annual";
@@ -54,21 +55,67 @@ function FakeQrCode() {
 
 export default function UpiPaymentModal({
   onClose,
+  planId,
   planName,
   amount,
   billingCycle,
 }: UpiPaymentModalProps) {
   const [step, setStep] = useState<Step>("scan");
   const [upiId, setUpiId] = useState("");
+  const [memberName, setMemberName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  function simulatePayment() {
+  async function simulatePayment() {
+    if (!memberName.trim() || !email.trim() || !phone.trim()) {
+      setError("Enter your name, email, and phone number first.");
+      return;
+    }
     setStep("processing");
-    setTimeout(() => setStep("success"), 1800);
+    setError(null);
+    try {
+      const response = await fetch("/api/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberName,
+          email,
+          phone,
+          planId,
+          planName,
+          amount,
+          billingCycle,
+        }),
+      });
+      if (!response.ok) throw new Error("Subscription could not be saved");
+      setStep("success");
+    } catch {
+      setError("We could not save your membership. Please try again.");
+      setStep("scan");
+    }
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-neutral-950 p-6">
+      <div className="relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-white/10 bg-neutral-950 p-6">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Go back"
+          className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
         <button
           type="button"
           onClick={onClose}
@@ -103,6 +150,12 @@ export default function UpiPaymentModal({
 
         {step === "scan" && (
           <div className="mt-6">
+            <div className="space-y-3">
+              <input required value={memberName} onChange={(event) => setMemberName(event.target.value)} placeholder="Full name" className="w-full rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500" />
+              <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email for renewal reminders" className="w-full rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500" />
+              <input required type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Phone number" className="w-full rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500" />
+            </div>
+            {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
             <div className="flex justify-center">
               <FakeQrCode />
             </div>

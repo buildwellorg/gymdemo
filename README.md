@@ -1,5 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Subscription reminders
+
+The demo membership flow records a member's name, email, phone, plan, and expiry
+date in the `subscriptions` Firestore collection. Admins can review these records
+at `/admin/subscriptions`.
+
+For renewal emails, configure `RESEND_API_KEY`, `REMINDER_FROM_EMAIL`, and
+`CRON_SECRET` in `.env.local`, then call `GET /api/cron/subscription-reminders`
+with `Authorization: Bearer <CRON_SECRET>` once per day from a scheduler. The
+endpoint sends reminders at 7, 3, and 1 day before expiry and avoids duplicates.
+
+The current UPI screen is explicitly a demo payment flow. A production launch
+should activate subscriptions from a verified Razorpay webhook rather than from
+the client-side demo confirmation.
+
 ## Getting Started
 
 First, run the development server:
