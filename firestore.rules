@@ -37,5 +37,9 @@ service cloud.firestore {
       // Written only by the server (Admin SDK) via /api/contact.
       allow read, write: if false;
     }
+    match /subscriptions/{docId} {
+      // Subscription records contain member contact details and are server-only.
+      allow read, write: if false;
+    }
   }
 }

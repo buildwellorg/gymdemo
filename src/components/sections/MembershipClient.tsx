@@ -133,6 +133,7 @@ export default function MembershipClient({ plans }: { plans: MembershipPlan[] })
       {selectedPlan && (
         <UpiPaymentModal
           onClose={() => setSelectedPlan(null)}
+          planId={selectedPlan.id}
           planName={selectedPlan.name}
           amount={
             billingCycle === "monthly"
